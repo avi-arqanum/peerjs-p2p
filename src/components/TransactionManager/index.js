@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Peer } from "peerjs";
+import { useEffect } from "react";
+import PeerConnection from "../../peer";
 
 import calculateTransactionId from "./transactionId";
 
@@ -7,51 +7,65 @@ const transactionManagerId =
 	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
 
 const TransactionManager = () => {
-	const [manager, setManager] = useState();
+	const unresolvedPromises = new Map();
 
 	useEffect(() => {
-		setManager(new Peer(transactionManagerId));
+		const initializeConnection = async () => {
+			try {
+				await PeerConnection.startPeerSession(transactionManagerId);
+				PeerConnection.onIncomingConnection(handleUserConnection);
+			} catch (error) {
+				console.log("Error initializing transaction manager", error);
+			}
+		};
+
+		initializeConnection();
 	}, []);
-
-	useEffect(() => {
-		if (manager) {
-			console.log(
-				"manager started listening for transactions on peerId:",
-				manager.id
-			);
-
-			manager.on("connection", handleUserConnection);
-		}
-	}, [manager]);
 
 	const handleUserConnection = (connection) => {
 		const senderId = connection.peer;
 		console.log(`Transaction manager connected to: ${senderId}`);
 
-		connection.on("data", async (userData) => {
-			if (userData.type === "payment") {
-				console.log("Transaction validation has begun");
+		PeerConnection.onConnectionReceiveData(senderId, async (userData) => {
+			switch (userData.type) {
+				case "payment":
+					{
+						console.log("Transaction validation has begun");
 
-				const isValid = true;
+						const isValid = true;
 
-				if (isValid) {
-					await handleValidTransaction(
-						userData,
-						senderId,
-						connection
-					);
-				} else {
-					connection.send({ type: "payment result", success: false });
-				}
+						if (isValid) {
+							await handleValidTransaction(userData, senderId);
+						} else {
+							await PeerConnection.sendConnection(senderId, {
+								type: "payment result",
+								success: false,
+							});
+						}
+					}
+					break;
+
+				case "payment updated":
+					if (unresolvedPromises.has(senderId)) {
+						const promiseHandlers =
+							unresolvedPromises.get(senderId);
+
+						if (userData.success) {
+							promiseHandlers.resolve();
+							console.log("Sender ledger updated");
+						} else {
+							promiseHandlers.reject();
+							console.log("Couldn't update sender ledger");
+						}
+
+						unresolvedPromises.delete(senderId);
+					}
+					break;
 			}
 		});
 	};
 
-	const handleValidTransaction = async (
-		transactionData,
-		senderId,
-		connection
-	) => {
+	const handleValidTransaction = async (transactionData, senderId) => {
 		const transactionId = calculateTransactionId(transactionData);
 
 		const outputUTXOs = transactionData.outputUTXOs.map(
@@ -76,18 +90,13 @@ const TransactionManager = () => {
 		const ledgerUpdatePromises = [];
 
 		ledgerUpdatePromises.push(
-			new Promise((resolve) => {
-				connection.send(transactionResult);
+			new Promise(async (resolve, reject) => {
+				await PeerConnection.sendConnection(
+					senderId,
+					transactionResult
+				);
 
-				connection.once("data", (senderResponse) => {
-					if (
-						senderResponse.type === "payment updated" &&
-						senderResponse.success
-					) {
-						resolve();
-						console.log("Sender ledger updated");
-					}
-				});
+				unresolvedPromises.set(senderId, { resolve, reject });
 			})
 		);
 
@@ -95,29 +104,27 @@ const TransactionManager = () => {
 			const recepientId = outputUTXO.publicKey;
 
 			if (recepientId !== senderId) {
-				const recepientConnection = manager.connect(recepientId);
+				await PeerConnection.connectPeer(recepientId);
 
 				ledgerUpdatePromises.push(
-					new Promise((resolve) => {
-						recepientConnection.on("open", () => {
-							recepientConnection.send({
-								type: "get payment",
-								recievedUTXOs: [outputUTXO],
-							});
-
-							recepientConnection.on(
-								"data",
-								(recipientResponse) => {
-									if (
-										recipientResponse.type ===
-											"payment updated" &&
-										recipientResponse.success
-									) {
-										resolve();
-									}
-								}
-							);
+					new Promise(async (resolve) => {
+						await PeerConnection.sendConnection(recepientId, {
+							type: "get payment",
+							receivedUTXOs: [outputUTXO],
 						});
+
+						PeerConnection.onConnectionReceiveData(
+							recepientId,
+							(recipientResponse) => {
+								if (
+									recipientResponse.type ===
+										"payment updated" &&
+									recipientResponse.success
+								) {
+									resolve();
+								}
+							}
+						);
 					})
 				);
 			}
@@ -125,6 +132,7 @@ const TransactionManager = () => {
 
 		await Promise.all(ledgerUpdatePromises);
 		console.log("All the recipients have updated their ledger");
+		console.log("Transaction complete!");
 	};
 };
 
