@@ -1,0 +1,19 @@
+.form_container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form {
+    width: 40%;
+}
+
+.button_container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn {
+    width: 50%;
+}
