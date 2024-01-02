@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Peer } from "peerjs";
+import React, { useEffect } from "react";
+import PeerConnection from "../../peer";
 
 import "./styles.css";
 
@@ -36,38 +36,38 @@ const transactionData = {
 };
 
 const User = () => {
-	const [user, setUser] = useState();
-	const [connection, setConnection] = useState();
-
 	useEffect(() => {
-		setUser(new Peer(userPublicKey));
+		const initializeUser = async () => {
+			try {
+				await PeerConnection.startPeerSession(userPublicKey);
+				await handleTransaction(transactionData);
+				PeerConnection.onIncomingConnection(handleIncomingConnection);
+			} catch (error) {
+				console.error(
+					"Initialization or transaction handling failed:",
+					error
+				);
+			}
+		};
+
+		initializeUser();
 	}, []);
 
-	useEffect(() => {
-		if (user) {
-			console.log("user started with peerId:", user.id);
-
-			handleTransaction(transactionData);
-			user.on("connection", handleIncomingConnection);
-		}
-	}, [user]);
-
-	const handleTransaction = (transactionData) => {
+	const handleTransaction = async (transactionData) => {
 		try {
-			const newConnection = user.connect(transactionManagerId);
+			await PeerConnection.connectPeer(transactionManagerId);
+			console.log("Connection with transaction manager established");
 
-			setConnection(newConnection);
+			await PeerConnection.sendConnection(
+				transactionManagerId,
+				transactionData
+			);
+			console.log("Transaction is sent for validation");
 
-			// console.log(newConnection);
-
-			newConnection.on("open", () => {
-				console.log("Connection with transaction manager established");
-
-				newConnection.send(transactionData);
-				console.log("Transaction is sent for validation");
-
-				newConnection.on("data", handleTransactionResult);
-			});
+			PeerConnection.onConnectionReceiveData(
+				transactionManagerId,
+				handleTransactionResult
+			);
 		} catch (error) {
 			console.log("Connection error:", error);
 		}
@@ -77,8 +77,11 @@ const User = () => {
 		if (transactionResult.success) {
 			console.log("Transaction is valid!");
 
-			setTimeout(() => {
-				connection.send({ type: "payment updated", success: true });
+			setTimeout(async () => {
+				await PeerConnection.sendConnection(transactionManagerId, {
+					type: "payment updated",
+					success: true,
+				});
 				console.log("Payment update sent to transaction manager");
 			}, 1000);
 		} else {
@@ -88,18 +91,15 @@ const User = () => {
 
 	const handleIncomingConnection = (incomingConnection) => {
 		const senderId = incomingConnection.peer;
-		console.log(`Received connection from ${senderId}`);
 
-		incomingConnection.on("data", (transactionData) => {
-			console.log("Received transaction data:", transactionData);
-
+		PeerConnection.onConnectionReceiveData(senderId, (transactionData) => {
 			if (senderId === transactionManagerId) {
-				console.log("Transaction manager has established connection");
+				console.log("Transaction manager has sent data");
 
 				// update merkle patricia trie
 
-				setTimeout(() => {
-					incomingConnection.send({
+				setTimeout(async () => {
+					await PeerConnection.sendConnection(transactionManagerId, {
 						type: "payment updated",
 						success: true,
 					});
