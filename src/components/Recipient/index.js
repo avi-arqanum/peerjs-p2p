@@ -9,7 +9,7 @@ const transactionManagerId =
 const recipientPublicKey =
 	"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
 
-const User = () => {
+const Recipient = () => {
 	const [user, setUser] = useState();
 
 	useEffect(() => {
@@ -74,4 +74,4 @@ const User = () => {
 	);
 };
 
-export default User;
+export default Recipient;
