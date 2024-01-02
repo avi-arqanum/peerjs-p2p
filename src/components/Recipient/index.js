@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Peer } from "peerjs";
+import React, { useEffect } from "react";
+import PeerConnection from "../../peer";
 
 import "./styles.css";
 
@@ -9,35 +9,34 @@ const transactionManagerId =
 const recipientPublicKey =
 	"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
 
-const Recipient = () => {
-	const [user, setUser] = useState();
-
+const User = () => {
 	useEffect(() => {
-		setUser(new Peer(recipientPublicKey));
+		const initializeUser = async () => {
+			try {
+				await PeerConnection.startPeerSession(recipientPublicKey);
+				PeerConnection.onIncomingConnection(handleIncomingConnection);
+			} catch (error) {
+				console.error(
+					"Initialization or handling incoming connection failed:",
+					error
+				);
+			}
+		};
+
+		initializeUser();
 	}, []);
-
-	useEffect(() => {
-		if (user) {
-			console.log("user started with peerId:", user.id);
-
-			user.on("connection", handleIncomingConnection);
-		}
-	}, [user]);
 
 	const handleIncomingConnection = (incomingConnection) => {
 		const senderId = incomingConnection.peer;
-		console.log(`Received connection from ${senderId}`);
 
-		incomingConnection.on("data", (transactionData) => {
-			console.log("Received transaction data:", transactionData);
-
+		PeerConnection.onConnectionReceiveData(senderId, (transactionData) => {
 			if (senderId === transactionManagerId) {
-				console.log("Transaction manager has established connection");
+				console.log("Transaction manager has sent data");
 
 				// update merkle patricia trie
 
-				setTimeout(() => {
-					incomingConnection.send({
+				setTimeout(async () => {
+					await PeerConnection.sendConnection(transactionManagerId, {
 						type: "payment updated",
 						success: true,
 					});
@@ -74,4 +73,4 @@ const Recipient = () => {
 	);
 };
 
-export default Recipient;
+export default User;
