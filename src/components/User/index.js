@@ -1,84 +1,111 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Peer } from "peerjs";
 
 import "./styles.css";
 
+const transactionManagerId =
+	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
+
+const userPublicKey =
+	"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b";
+
+const recipientPublicKey =
+	"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
+
+const transactionData = {
+	type: "payment",
+	inputUTXOs: [
+		{
+			transactionId: "some transactionId",
+			outputIndex: 0,
+			amount: 15,
+			publicKey: userPublicKey,
+		},
+	],
+	digitalSignatures: ["some signature"],
+	outputUTXOs: [
+		{
+			amount: 10,
+			publicKey: recipientPublicKey,
+		},
+		{
+			amount: 5,
+			publicKey: userPublicKey,
+		},
+	],
+};
+
 const User = () => {
-	const transactionManagerId =
-		"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
+	const [user, setUser] = useState();
+	const [connection, setConnection] = useState();
 
-	// peerId would be same as users public key
-	// for seed 1
-	const userPublicKey =
-		"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b";
+	useEffect(() => {
+		setUser(new Peer(userPublicKey));
+	}, []);
 
-	// for seed 2
-	const recipientPublicKey =
-		"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
+	useEffect(() => {
+		if (user) {
+			console.log("user started with peerId:", user.id);
 
-	const user = new Peer(userPublicKey);
+			handleTransaction(transactionData);
+			user.on("connection", handleIncomingConnection);
+		}
+	}, [user]);
 
-	// sender & reciever Ids are public keys
-	const transactionData = {
-		type: "payment",
-		inputUTXOs: [
-			{
-				transactionId: "some transactionId",
-				outputIndex: 0,
-				amount: 15,
-				publicKey: userPublicKey,
-			},
-		],
-		// for each UTXO
-		digitalSignatures: ["some signature"],
-		outputUTXOs: [
-			{
-				amount: 10,
-				publicKey: recipientPublicKey,
-			},
-			{
-				amount: 5,
-				publicKey: userPublicKey,
-			},
-		],
+	const handleTransaction = (transactionData) => {
+		try {
+			const newConnection = user.connect(transactionManagerId);
+
+			setConnection(newConnection);
+
+			newConnection.on("open", () => {
+				console.log("Connection with transaction manager established");
+
+				newConnection.send(transactionData);
+				console.log("Transaction is sent for validation");
+
+				newConnection.on("data", handleTransactionResult);
+			});
+		} catch (error) {
+			console.log("Connection error:", error);
+		}
 	};
 
-	// send transaction to TM
-	const connection = user.connect(transactionManagerId);
-	connection.on("open", () => {
-		console.log("Connection with transaction manager established");
-		connection.send(transactionData);
-		console.log("Transaction data sent");
+	const handleTransactionResult = (transactionResult) => {
+		if (transactionResult.success) {
+			console.log("Transaction is valid!");
 
-		connection.on("data", (transactionResult) => {
-			if (transactionResult.success) {
-				console.log("Transaction is valid");
-				// update merkle patricia trie (delete input UTXOs & add change UTXOs)
-				setTimeout(() => {
-					connection.send({ type: "payment updated", success: true });
-					console.log("Payment updated sent to TM");
-				}, 1000);
-			} else {
-				console.log("Transaction manager disapproved transaction");
-			}
-		});
-	});
+			setTimeout(() => {
+				connection.send({ type: "payment updated", success: true });
+				console.log("Payment update sent to transaction manager");
+			}, 1000);
+		} else {
+			console.log("Transaction manager disapproved the transaction");
+		}
+	};
 
-	// receive payment through TM
-	user.on("connection", (connection) => {
-		const senderId = connection.peer;
+	const handleIncomingConnection = (incomingConnection) => {
+		const senderId = incomingConnection.peer;
+		console.log(`Received connection from ${senderId}`);
 
-		connection.on("data", (transactionData) => {
+		incomingConnection.on("data", (transactionData) => {
+			console.log("Received transaction data:", transactionData);
+
 			if (senderId === transactionManagerId) {
-				console.log("Transaction manager established connection");
+				console.log("Transaction manager has established connection");
+
 				// update merkle patricia trie
+
 				setTimeout(() => {
-					connection.send({ type: "payment updated", success: true });
-					console.log("payment received & ledger updated");
+					incomingConnection.send({
+						type: "payment updated",
+						success: true,
+					});
+					console.log("Payment received & ledger updated");
 				}, 1000);
 			}
 		});
-	});
+	};
 
 	return (
 		<div className="form_container">
@@ -97,7 +124,7 @@ const User = () => {
 					className="form-control mb-4"
 				/>
 
-				<div class="button_container">
+				<div className="button_container">
 					<button type="submit" className="btn btn-primary">
 						Send
 					</button>

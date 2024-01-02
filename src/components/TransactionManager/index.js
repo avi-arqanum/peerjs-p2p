@@ -28,13 +28,15 @@ function calculateTransactionId(transactionData) {
 }
 
 const TransactionManager = () => {
-	// const validatorIds = [
-	// 	"4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
-	// ];
-
 	const transactionManagerId =
 		"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
-	const manager = new Peer(transactionManagerId);
+	const manager = new Peer();
+
+	manager.on("open", (id) => {
+		console.log(`Started listening for new connections on ${id}`);
+	});
+
+	manager.on("error", (err) => console.log("PeerJS error:", err));
 
 	manager.on("connection", async (connection) => {
 		const senderId = connection.peer;
@@ -43,49 +45,6 @@ const TransactionManager = () => {
 		connection.on("data", async (transactionData) => {
 			if (transactionData.type === "payment") {
 				console.log("Transaction validation started");
-				// validation logic
-				// const transactionValidators = validatorIds;
-
-				// var votes = {
-				// 	valid: 0,
-				// 	invalid: 0,
-				// };
-
-				// const validationPromises = [];
-
-				// for (let validatorId of transactionValidators) {
-				// 	const validatorConnection = manager.connect(validatorId);
-
-				// 	validationPromises.push(
-				// 		new Promise((resolve) => {
-				// 			validatorConnection.on("open", async () => {
-				// 				validatorConnection.send(transactionData);
-
-				// 				validatorConnection.on(
-				// 					"data",
-				// 					(validationResult) => {
-				// 						if (validationResult.valid === true) {
-				// 							votes.valid += 1;
-				// 						} else {
-				// 							votes.invalid += 1;
-				// 						}
-
-				// 						resolve();
-				// 					}
-				// 				);
-				// 			});
-				// 		})
-				// 	);
-				// }
-
-				// // Wait for all the validators to respond
-				// await Promise.all(validationPromises);
-
-				// const validationThreshold = Math.ceil(
-				// 	transactionValidators.length * 0.66666667
-				// );
-
-				// const isValid = votes.valid >= validationThreshold;
 
 				console.log("Validation reached transaction is valid");
 				const isValid = true;
