@@ -6,6 +6,10 @@ import calculateTransactionId from "./transactionId";
 const transactionManagerId =
 	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
 
+const validatorIds = [
+	"4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+];
+
 const TransactionManager = () => {
 	const unresolvedPromises = new Map();
 
@@ -32,7 +36,7 @@ const TransactionManager = () => {
 					{
 						console.log("Transaction validation has begun");
 
-						const isValid = true;
+						const isValid = handleValidation(userData);
 
 						if (isValid) {
 							await handleValidTransaction(userData, senderId);
@@ -63,6 +67,48 @@ const TransactionManager = () => {
 					break;
 			}
 		});
+	};
+
+	const handleValidation = async (transactionData) => {
+		const votes = {
+			valid: 0,
+			invalid: 0,
+		};
+
+		const validationPromises = [];
+
+		for (let validatorId of validatorIds) {
+			validationPromises.push(
+				new Promise(async (resolve) => {
+					await PeerConnection.connectPeer(validatorId);
+
+					await PeerConnection.sendConnection(
+						validatorId,
+						transactionData
+					);
+
+					PeerConnection.onConnectionReceiveData(
+						validatorId,
+						(validationData) => {
+							if (validationData.success) {
+								votes.valid += 1;
+							} else {
+								votes.invalid += 1;
+							}
+
+							resolve();
+						}
+					);
+				})
+			);
+		}
+
+		await Promise.all(validationPromises);
+		console.log("All the validators have responded");
+
+		const validationThreshold = Math.ceil(validatorIds.length * 0.66666667);
+
+		return votes.valid >= validationThreshold;
 	};
 
 	const handleValidTransaction = async (transactionData, senderId) => {
