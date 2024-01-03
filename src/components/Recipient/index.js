@@ -31,7 +31,9 @@ const User = () => {
 
 		PeerConnection.onConnectionReceiveData(senderId, (transactionData) => {
 			if (senderId === transactionManagerId) {
-				console.log("Transaction manager has sent data");
+				console.log(
+					"Transaction manager has asked to update received UTXOs"
+				);
 
 				// update merkle patricia trie
 
@@ -40,7 +42,7 @@ const User = () => {
 						type: "payment updated",
 						success: true,
 					});
-					console.log("Payment received & ledger updated");
+					console.log("Ledger updated & sent back to manager");
 				}, 1000);
 			}
 		});
