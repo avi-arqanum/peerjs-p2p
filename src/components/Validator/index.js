@@ -22,6 +22,8 @@ const Validator = () => {
 
 		PeerConnection.onConnectionReceiveData(senderId, (data) => {
 			if (senderId === transactionManagerId) {
+				console.log("Transaction manager has sent data for validation");
+
 				// validation logic - access merkle patricia trie
 				const isValid = true;
 				PeerConnection.sendConnection(senderId, {
@@ -29,6 +31,8 @@ const Validator = () => {
 					type: "validation result",
 					success: isValid,
 				});
+
+				console.log("Transaction validated and sent back to manager");
 			}
 		});
 	};

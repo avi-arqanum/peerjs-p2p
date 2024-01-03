@@ -37,6 +37,10 @@ const TransactionManager = () => {
 						console.log("Transaction validation has begun");
 
 						const isValid = handleValidation(userData);
+						console.log(
+							"Validators have reached on consensus that transaction is",
+							isValid ? "valid" : "invalid"
+						);
 
 						if (isValid) {
 							await handleValidTransaction(userData, senderId);
