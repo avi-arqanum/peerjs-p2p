@@ -11,14 +11,14 @@ export default function calculateTransactionId(transactionData) {
 			input.transactionId +
 			input.outputIndex +
 			input.amount +
-			input.senderId;
+			input.publicKey;
 	}
 
 	transactionString += transactionData.outputUTXOs.length;
 
 	// Concatenate output UTXOs
 	for (const output of transactionData.outputUTXOs) {
-		transactionString += output.amount + output.recieverId;
+		transactionString += output.amount + output.publicKey;
 	}
 
 	// Hash the concatenated string
