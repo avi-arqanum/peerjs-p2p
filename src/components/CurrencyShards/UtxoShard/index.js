@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import PeerConnection from "../../../peer";
 
 const transactionCoordinatorId = "";
@@ -29,29 +31,25 @@ const handleIncomingConnection = (connection) => {
 					break;
 
 				case "rollback":
-					{
-						// unlock the inputHashes if locked
-						await PeerConnection.sendConnection(senderId, {
-							type: "rollback response",
-							action: "complete",
-						});
+					// unlock the inputHashes if locked
+					await PeerConnection.sendConnection(senderId, {
+						type: "rollback response",
+						action: "complete",
+					});
 
-						console.log(
-							"UTXO shard has successfully unlocked the inputHashes"
-						);
-					}
+					console.log(
+						"UTXO shard has successfully unlocked the inputHashes"
+					);
 					break;
 
 				case "commit":
-					{
-						// update UHS by deleting inputHashes & adding outputHashes
-						PeerConnection.sendConnection(senderId, {
-							type: "commit response",
-							action: "complete",
-						});
+					// update UHS by deleting inputHashes & adding outputHashes
+					PeerConnection.sendConnection(senderId, {
+						type: "commit response",
+						action: "complete",
+					});
 
-						console.log("Transaction commit complete");
-					}
+					console.log("Transaction commit complete");
 					break;
 			}
 		}

@@ -36,7 +36,7 @@ const hashes = {
 		return shardHashes.get(transactionId);
 	},
 	setShardHashes: (compactData) => {
-		shardHashes.set(transactionId, {
+		shardHashes.set(compactData.transactionId, {
 			inputShardHashes: distributeHashes(compactData.inputHashes),
 			outputShardHashes: distributeHashes(compactData.outputHashes),
 		});
