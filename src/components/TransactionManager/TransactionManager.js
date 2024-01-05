@@ -11,6 +11,9 @@ import {
 } from "./CurrencyShard";
 
 import { compact } from "./CurrencyShard";
+import PeerConnection from "../../peer";
+
+import { transactionCoordinatorId } from "./CurrencyShard";
 
 const vetoVotes = new Map();
 export const veto = {
@@ -38,7 +41,11 @@ export const veto = {
 	},
 };
 
-export const handleValidation = async (transactionData, transactionId) => {
+export const handleValidation = async (
+	senderId,
+	transactionId,
+	transactionData
+) => {
 	var validationPromises = [];
 
 	validationPromises.push(
@@ -93,7 +100,7 @@ const handleInvalidTransaction = async (senderId, transactionId) => {
 		success: false,
 	});
 
-	await PeerConnection.sendConnection(TransactionCoordinatorId, {
+	await PeerConnection.sendConnection(transactionCoordinatorId, {
 		type: "transaction invalidated",
 		...compact.getTransaction(transactionId),
 	});

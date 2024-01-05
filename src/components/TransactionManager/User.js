@@ -55,7 +55,7 @@ export const handleUserConnection = (connection) => {
 					console.log("Transaction validation has begun");
 					const transactionId = calculateTransactionId(data);
 
-					await handleValidation(data, transactionId);
+					await handleValidation(senderId, transactionId, data);
 				}
 				break;
 

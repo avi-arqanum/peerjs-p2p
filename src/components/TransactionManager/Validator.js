@@ -1,5 +1,5 @@
 import PeerConnection from "../../peer";
-import { updateVetoVotes } from "./TransactionManager";
+import { veto } from "./TransactionManager";
 
 const validatorIds = [
 	"4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
@@ -53,7 +53,7 @@ export const handleValidatorsValidation = async (
 		isValid ? "valid" : "invalid"
 	);
 
-	updateVetoVotes(transactionId, isValid);
+	veto.updateVotes(transactionId, isValid);
 };
 
 export const handleValidatorsLedgerUpdate = async (

@@ -1,7 +1,7 @@
 import { createPublicKey, createVerify, createHash } from "crypto";
 
 import PeerConnection from "../../peer";
-import { updateVetoVotes } from "./TransactionManager";
+import { veto } from "./TransactionManager";
 
 const utxoHash = (utxo) => {
 	const utxoString =
@@ -10,9 +10,9 @@ const utxoHash = (utxo) => {
 	return createHash("SHA256").update(utxoString).digest("hex");
 };
 
-const verifySignature = (utxo, signature, publicKeyHex) => {
+const verifySignature = (utxo, signature) => {
 	const publicKey = createPublicKey({
-		key: Buffer.from(publicKeyHex, "hex"),
+		key: Buffer.from(utxo.publicKey, "hex"),
 		type: "spki",
 		format: "der",
 	});
@@ -29,7 +29,7 @@ const localValidate = (transaction) => {
 		const utxo = transaction.inputUTXOs[i];
 		const signature = transaction.digitalSignatures[i];
 
-		if (!verifySignature(utxo, signature, input.publicKey)) {
+		if (!verifySignature(utxo, signature)) {
 			return false;
 		}
 	}
@@ -80,7 +80,7 @@ export const compact = {
 	},
 };
 
-const transactionCoordinatorId = "";
+export const transactionCoordinatorId = "";
 
 export const handleCurrencyShardValidation = async (
 	transactionData,
@@ -107,14 +107,14 @@ export const handleCurrencyShardValidation = async (
 				switch (data.type) {
 					case "validation result":
 						{
-							updateVetoVotes(transactionId, data.success);
+							veto.updateVotes(transactionId, data.success);
 						}
 						break;
 				}
 			}
 		);
 	} else {
-		updateVetoVotes(transactionId, false);
+		veto.updateVotes(transactionId, false);
 	}
 
 	console.log("Currency shard validation completed");
