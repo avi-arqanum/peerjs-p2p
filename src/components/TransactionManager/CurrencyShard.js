@@ -38,7 +38,7 @@ const localValidate = (transaction) => {
 };
 
 const compactTransactions = new Map();
-const compact = {
+export const compact = {
 	getTransaction: (transactionId) => {
 		compactTransactions.get(transactionId);
 	},
@@ -123,7 +123,7 @@ export const handleCurrencyShardValidation = async (
 export const handleCurrencyShardsLedgerUpdate = async (transactionId) => {
 	const shardLedgerUpdatePromise = new Promise(async (resolve) => {
 		await PeerConnection.sendConnection(transactionCoordinatorId, {
-			type: "ledger update",
+			type: "transaction validated",
 			...compact.getTransaction(transactionId),
 		});
 
@@ -131,7 +131,7 @@ export const handleCurrencyShardsLedgerUpdate = async (transactionId) => {
 			transactionCoordinatorId,
 			(data) => {
 				if (data.type === "ledger updated" && data.success === true) {
-					console.log("Currency shard has been updated!");
+					console.log("Currency shard has updated it's ledger!");
 					resolve();
 				}
 			}

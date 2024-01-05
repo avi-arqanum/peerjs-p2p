@@ -1,6 +1,5 @@
 import PeerConnection from "../../peer";
 import { handleValidation } from "./TransactionManager";
-import { handleValidTransaction } from "./TransactionManager";
 import calculateTransactionId from "./transactionId";
 
 const validFormat = (transaction) => {
@@ -34,14 +33,6 @@ const validFormat = (transaction) => {
 	return true;
 };
 
-const invalidateTransaction = async (senderId, transactionId) => {
-	await PeerConnection.sendConnection(senderId, {
-		type: "payment result",
-		transactionId,
-		success: false,
-	});
-};
-
 const unresolvedPromises = new Map();
 
 export const handleUserConnection = (connection) => {
@@ -53,24 +44,18 @@ export const handleUserConnection = (connection) => {
 			case "payment":
 				{
 					if (!validFormat(data)) {
-						await invalidateTransaction(senderId);
+						await PeerConnection.sendConnection(senderId, {
+							type: "payment result",
+							success: false,
+							// add some localId for user identifying a transaction
+						});
 						return;
 					}
 
 					console.log("Transaction validation has begun");
 					const transactionId = calculateTransactionId(data);
 
-					const isValid = await handleValidation(data, transactionId);
-
-					if (isValid) {
-						await handleValidTransaction(
-							data,
-							transactionId,
-							senderId
-						);
-					} else {
-						await invalidateTransaction(senderId, transactionId);
-					}
+					await handleValidation(data, transactionId);
 				}
 				break;
 
@@ -91,4 +76,70 @@ export const handleUserConnection = (connection) => {
 				break;
 		}
 	});
+};
+
+export const handleUsersLedgerUpdate = async (
+	senderId,
+	transactionData,
+	transactionId
+) => {
+	const outputUTXOs = transactionData.outputUTXOs.map((output, index) => ({
+		...output,
+		transactionId: transactionId,
+		outputIndex: index,
+	}));
+
+	const changeUTXOs = outputUTXOs.filter(
+		(outputUTXO) => outputUTXO.publicKey === senderId
+	);
+
+	const transactionResult = {
+		type: "payment result",
+		success: true,
+		inputUTXOs: transactionData.inputUTXOs,
+		changeUTXOs,
+	};
+
+	const ledgerUpdatePromises = [];
+
+	ledgerUpdatePromises.push(
+		new Promise(async (resolve, reject) => {
+			await PeerConnection.sendConnection(senderId, transactionResult);
+
+			unresolvedPromises.set(senderId, { resolve, reject });
+		})
+	);
+
+	for (let outputUTXO of outputUTXOs) {
+		const recepientId = outputUTXO.publicKey;
+
+		if (recepientId !== senderId) {
+			await PeerConnection.connectPeer(recepientId);
+
+			ledgerUpdatePromises.push(
+				new Promise(async (resolve) => {
+					await PeerConnection.sendConnection(recepientId, {
+						type: "get payment",
+						receivedUTXOs: [outputUTXO],
+					});
+
+					PeerConnection.onConnectionReceiveData(
+						recepientId,
+						(recipientResponse) => {
+							if (
+								recipientResponse.type === "payment updated" &&
+								recipientResponse.success
+							) {
+								resolve();
+							}
+						}
+					);
+				})
+			);
+		}
+	}
+
+	await Promise.all(ledgerUpdatePromises);
+	console.log("All the recipients have updated their ledger");
+	console.log("Transaction complete!");
 };
