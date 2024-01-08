@@ -92,6 +92,7 @@ export const handleValidTransaction = async (
 
 	await Promise.all(layerUpdatePromises);
 	console.log("All layers have updated their ledger!");
+	console.log("Transaction complete!");
 };
 
 const transactionCoordinatorId = nodeIds["transaction coordinator"].id;

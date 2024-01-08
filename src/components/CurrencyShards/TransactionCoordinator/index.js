@@ -5,7 +5,7 @@ import nodeIds from "../../../Ids";
 const transactionManagerId = nodeIds["transaction manager"].id;
 const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 
-// let's say total 4 shards
+// let's say total 1 shards
 const utxoShardIds = [nodeIds["utxo shard"].id];
 const distributeHashes = (hashArray) => {
 	// var shards = [[], [], [], []];
@@ -104,6 +104,7 @@ const handleIncomingConnection = async (connection) => {
 				switch (compactData.type) {
 					case "transaction validation":
 						{
+							console.log("transaction validation begun");
 							const isValid = await handleShardValidation(
 								compactData
 							);
@@ -113,6 +114,10 @@ const handleIncomingConnection = async (connection) => {
 								type: "validation result",
 								transactionId: compactData.transactionId,
 							});
+							console.log(
+								"transaction validation done with consensus",
+								isValid
+							);
 
 							// how would we handle the case when shards have discarded the transaction
 							// but transaction manager has come to a valid consensus (ANOMALY)
@@ -122,6 +127,8 @@ const handleIncomingConnection = async (connection) => {
 
 					case "transaction invalidated":
 						{
+							console.log("transaction rollback has begun");
+
 							const inputShardHashes = hashes.getShardHashes(
 								compactData.transactionId
 							).inputShardHashes;
@@ -173,6 +180,10 @@ const handleIncomingConnection = async (connection) => {
 
 					case "transaction validated":
 						{
+							console.log(
+								"transaction has been validated & ledger updation has begun"
+							);
+
 							const shardHashes = hashes.getShardHashes(
 								compactData.transactionId
 							);
@@ -221,6 +232,7 @@ const handleIncomingConnection = async (connection) => {
 							}
 
 							await Promise.all(shardCommitPromises);
+							console.log("ledger updation done");
 
 							await PeerConnection.sendConnection(senderId, {
 								type: "ledger updated",

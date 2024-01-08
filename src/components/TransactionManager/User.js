@@ -51,7 +51,9 @@ export const handleUserConnection = (connection) => {
 						return;
 					}
 
-					console.log("transaction validation has begun");
+					console.log(
+						"format validated & transaction validation has begun"
+					);
 					const transactionId = calculateTransactionId(data);
 
 					await handleValidation(senderId, transactionId, data);
@@ -139,6 +141,4 @@ export const handleUsersLedgerUpdate = async (
 	}
 
 	await Promise.all(ledgerUpdatePromises);
-	console.log("All the recipients have updated their ledger");
-	console.log("Transaction complete!");
 };

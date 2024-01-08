@@ -131,8 +131,8 @@ export const handleCurrencyShardValidation = async (
 export const handleCurrencyShardsLedgerUpdate = async (transactionId) => {
 	const shardLedgerUpdatePromise = new Promise(async (resolve) => {
 		await PeerConnection.sendConnection(transactionCoordinatorId, {
-			type: "transaction validated",
 			...compact.getTransaction(transactionId),
+			type: "transaction validated",
 		});
 
 		PeerConnection.onConnectionReceiveData(
