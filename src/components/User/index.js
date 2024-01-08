@@ -1,26 +1,27 @@
 import React, { useEffect } from "react";
 import PeerConnection from "../../peer";
-import { handleTransaction, handleIncomingConnection } from "./User";
+import {
+	handleTransaction,
+	handleIncomingConnection,
+	createSignature,
+} from "./User";
+import nodeIds from "../../Ids";
 
 import "./styles.css";
 
-const userPublicKey =
-	"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b";
+const userPublicKey = nodeIds["sender"].id;
+const recipientPublicKey = nodeIds["recipient"].id;
 
-const recipientPublicKey =
-	"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
-
-const transactionData = {
+var transactionData = {
 	type: "payment",
 	inputUTXOs: [
 		{
-			transactionId: "some transactionId",
+			transactionId: "transactionId",
 			outputIndex: 0,
 			amount: 15,
 			publicKey: userPublicKey,
 		},
 	],
-	digitalSignatures: ["some signature"],
 	outputUTXOs: [
 		{
 			amount: 10,
@@ -32,6 +33,10 @@ const transactionData = {
 		},
 	],
 };
+
+transactionData.digitalSignatures = transactionData.inputUTXOs.map((utxo) =>
+	createSignature(utxo, "5")
+);
 
 const User = () => {
 	useEffect(() => {

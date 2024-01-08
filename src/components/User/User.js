@@ -1,29 +1,33 @@
-import { generateKeyPairSync, createSign } from "crypto";
+import { ec as EC } from "elliptic";
 import PeerConnection from "../../peer";
+import nodeIds from "../../Ids";
 
-const transactionManagerId =
-	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
+function generateKeyPair(seedString) {
+	const ec = new EC("secp256k1");
 
-export const createSignature = (utxo) => {
-	const { privateKey, publicKey } = generateKeyPairSync("ec", {
-		namedCurve: "sect239k1",
-	});
+	const encoder = new TextEncoder();
+	const seed = encoder.encode(seedString);
+	console.log(seed);
 
-	const publicKeyHex = publicKey
-		.export({ type: "spki", format: "der" })
-		.toString("hex");
+	const keyPair = ec.keyFromPrivate(seed);
+
+	// const publicKeyHex = keyPair.getPublic().encode("hex");
+
+	return keyPair;
+}
+
+export function createSignature(utxo, seedString) {
+	const keyPair = generateKeyPair(seedString);
 
 	const utxoString =
 		utxo.transactionId + utxo.outputIndex + utxo.publicKey + utxo.amount;
 
-	const sign = createSign("SHA256").update(utxoString).end();
-	const signature = sign.sign(privateKey, "hex");
+	const signature = keyPair.sign(utxoString).toDER("hex");
 
-	return {
-		signature,
-		publicKeyHex,
-	};
-};
+	return signature;
+}
+
+const transactionManagerId = nodeIds["transaction manager"].id;
 
 const handleTransactionResult = (transactionResult) => {
 	if (transactionResult.success) {

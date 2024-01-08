@@ -12,8 +12,7 @@ import {
 
 import { compact } from "./CurrencyShard";
 import PeerConnection from "../../peer";
-
-import { transactionCoordinatorId } from "./CurrencyShard";
+import nodeIds from "../../Ids";
 
 const vetoVotes = new Map();
 export const veto = {
@@ -93,6 +92,8 @@ export const handleValidTransaction = async (
 	await Promise.all(layerUpdatePromises);
 	console.log("All layers have updated their ledger!");
 };
+
+const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 
 const handleInvalidTransaction = async (senderId, transactionId) => {
 	await PeerConnection.sendConnection(senderId, {

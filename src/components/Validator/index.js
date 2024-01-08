@@ -1,11 +1,9 @@
 import { useEffect } from "react";
 import PeerConnection from "../../peer";
+import nodeIds from "../../Ids";
 
-const transactionManagerId =
-	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
-
-const validatorId =
-	"4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce";
+const transactionManagerId = nodeIds["transaction manager"].id;
+const validatorId = nodeIds["validator"].id;
 
 const Validator = () => {
 	useEffect(() => {

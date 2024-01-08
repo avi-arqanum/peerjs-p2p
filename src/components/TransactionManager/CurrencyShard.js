@@ -1,7 +1,9 @@
-import { createPublicKey, createVerify, createHash } from "crypto";
+import { ec as EC } from "elliptic";
+import { createHash } from "crypto";
 
 import PeerConnection from "../../peer";
 import { veto } from "./TransactionManager";
+import nodeIds from "../../Ids";
 
 const utxoHash = (utxo) => {
 	const utxoString =
@@ -10,19 +12,16 @@ const utxoHash = (utxo) => {
 	return createHash("SHA256").update(utxoString).digest("hex");
 };
 
-const verifySignature = (utxo, signature) => {
-	const publicKey = createPublicKey({
-		key: Buffer.from(utxo.publicKey, "hex"),
-		type: "spki",
-		format: "der",
-	});
+function verifySignature(utxo, signature) {
+	const ec = new EC("secp256k1");
 
 	const utxoString =
 		utxo.transactionId + utxo.outputIndex + utxo.publicKey + utxo.amount;
 
-	const verify = createVerify("SHA256").update(utxoString).end();
-	return verify.verify(publicKey, signature, "hex");
-};
+	const key = ec.keyFromPublic(utxo.publicKey, "hex");
+
+	return key.verify(utxoString, signature);
+}
 
 const localValidate = (transaction) => {
 	for (let i = 0; i < transaction.inputUTXOs.length; i++) {
@@ -80,7 +79,7 @@ export const compact = {
 	},
 };
 
-export const transactionCoordinatorId = "";
+export const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 
 export const handleCurrencyShardValidation = async (
 	transactionData,

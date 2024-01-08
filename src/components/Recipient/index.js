@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
 import PeerConnection from "../../peer";
+import nodeIds from "../../Ids";
 
 import "./styles.css";
 
-const transactionManagerId =
-	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
-
-const recipientPublicKey =
-	"d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35";
+const transactionManagerId = nodeIds["transaction manager"].id;
+const recipientPublicKey = nodeIds["recipient"].id;
 
 const User = () => {
 	useEffect(() => {

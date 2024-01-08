@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import PeerConnection from "../../../peer";
+import nodeIds from "../../../Ids";
 
-const transactionManagerId =
-	"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
-
-const transactionCoordinatorId = "";
+const transactionManagerId = nodeIds["transaction manager"].id;
+const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 
 // let's say total 4 shards
-const utxoShardIds = [];
+const utxoShardIds = [nodeIds["utxo shard"].id];
 const distributeHashes = (hashArray) => {
 	var shards = [[], [], [], []];
 

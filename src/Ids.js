@@ -1,0 +1,28 @@
+const nodeIds = {
+	"transaction manager": {
+		seed: 0,
+		id: "046eca335d9645307db441656ef4e65b4bfc579b27452bebc19bd870aa1118e5c3d50123b57a7a0710592f579074b875a03a496a3a3bf8ec34498a2f7805a08668",
+	},
+	recipient: {
+		seed: 1,
+		id: "04f2dac991cc4ce4b9ea44887e5c7c0bce58c80074ab9d4dbaeb28531b7739f530e0dedc9b3b2f8dad4da1f32dec2531df9eb5fbeb0598e4fd1a117dba703a3c37",
+	},
+	validator: {
+		seed: 2,
+		id: "0429757774cc6f3be1d5f1774aefa8f02e50bc64404230e7a67e8fde79bd559a9ac39d07337ddc9268a0eba45a7a41876d151b423eac4033b550bd28c17c470134",
+	},
+	"transaction coordinator": {
+		seed: 3,
+		id: "04463b3d9f662621fb1b4be8fbbe2520125a216cdfc9dae3debcba4850c690d45b5ed430d78c296c3543114306dd8622d7c622e27c970a1de31cb377b01af7307e",
+	},
+	"utxo shard": {
+		seed: 4,
+		id: "042b22efda32491a9e0294339ca3da761f7d36cfc8814c1b29ca731921025ff6957ed520327080a9fa4c16662fc134fadcc7048846d46ade0030b83fd19adc87cd",
+	},
+	sender: {
+		seed: 5,
+		id: "04f16f804244e46e2a09232d4aff3b59976b98fac14328a2d1a32496b49998f247cedabd9b82203f7e13d206fcdf4e33d92a6c53c26e5cce26d6579962c4e31df6}",
+	},
+};
+
+export default nodeIds;

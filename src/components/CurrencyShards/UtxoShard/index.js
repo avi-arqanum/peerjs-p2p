@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 
 import PeerConnection from "../../../peer";
+import nodeIds from "../../../Ids";
 
-const transactionCoordinatorId = "";
-
-const shardId = "";
+const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
+const shardId = nodeIds["utxo shard"].id;
 
 const handleIncomingConnection = (connection) => {
 	const senderId = connection.peer;
