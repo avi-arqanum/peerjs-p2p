@@ -8,24 +8,24 @@ const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 // let's say total 4 shards
 const utxoShardIds = [nodeIds["utxo shard"].id];
 const distributeHashes = (hashArray) => {
-	var shards = [[], [], [], []];
+	// var shards = [[], [], [], []];
 
-	hashArray.forEach((hash) => {
-		if (hash.length === 0) return;
+	// hashArray.forEach((hash) => {
+	// 	if (hash.length === 0) return;
 
-		let lastChar = hash[hash.length - 1].toLowerCase();
-		if (lastChar >= "0" && lastChar <= "3") {
-			shards[0].push(hash);
-		} else if (lastChar >= "4" && lastChar <= "7") {
-			shards[1].push(hash);
-		} else if (lastChar >= "8" && lastChar <= "b") {
-			shards[2].push(hash);
-		} else if (lastChar >= "c" && lastChar <= "f") {
-			shards[3].push(hash);
-		}
-	});
+	// 	let lastChar = hash[hash.length - 1].toLowerCase();
+	// 	if (lastChar >= "0" && lastChar <= "3") {
+	// 		shards[0].push(hash);
+	// 	} else if (lastChar >= "4" && lastChar <= "7") {
+	// 		shards[1].push(hash);
+	// 	} else if (lastChar >= "8" && lastChar <= "b") {
+	// 		shards[2].push(hash);
+	// 	} else if (lastChar >= "c" && lastChar <= "f") {
+	// 		shards[3].push(hash);
+	// 	}
+	// });
 
-	return shards;
+	return [shards];
 };
 
 const shardHashes = new Map();
