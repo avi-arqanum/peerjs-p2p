@@ -25,7 +25,7 @@ const distributeHashes = (hashArray) => {
 	// 	}
 	// });
 
-	return [shards];
+	return [hashArray];
 };
 
 const shardHashes = new Map();
