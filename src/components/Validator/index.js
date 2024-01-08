@@ -20,17 +20,45 @@ const Validator = () => {
 
 		if (senderId === transactionManagerId) {
 			PeerConnection.onConnectionReceiveData(senderId, (data) => {
-				console.log("Transaction manager has sent data for validation");
+				switch (data.type) {
+					case "transaction validation":
+						{
+							console.log(
+								"Transaction manager has sent data for validation"
+							);
 
-				// validation logic - access merkle patricia trie
-				const isValid = true;
-				PeerConnection.sendConnection(senderId, {
-					...data,
-					type: "validation result",
-					success: isValid,
-				});
+							// validation logic - access merkle patricia trie
+							const isValid = true;
+							PeerConnection.sendConnection(senderId, {
+								...data,
+								type: "validation result",
+								success: isValid,
+							});
 
-				console.log("Transaction validated and sent back to manager");
+							console.log(
+								"Transaction validated and sent back to manager"
+							);
+						}
+						break;
+
+					case "ledger update":
+						{
+							console.log(
+								"Transaction manager has asked to update ledger"
+							);
+
+							// updation logic - update merkle patricia trie
+
+							PeerConnection.sendConnection(senderId, {
+								...data,
+								type: "ledger updated",
+								success: true,
+							});
+
+							console.log("ledger updated & sent back to TM");
+						}
+						break;
+				}
 			});
 		}
 	};
