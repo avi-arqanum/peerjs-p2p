@@ -18,8 +18,8 @@ const Validator = () => {
 	const handleIncomingConnection = (connection) => {
 		const senderId = connection.peer;
 
-		PeerConnection.onConnectionReceiveData(senderId, (data) => {
-			if (senderId === transactionManagerId) {
+		if (senderId === transactionManagerId) {
+			PeerConnection.onConnectionReceiveData(senderId, (data) => {
 				console.log("Transaction manager has sent data for validation");
 
 				// validation logic - access merkle patricia trie
@@ -31,8 +31,8 @@ const Validator = () => {
 				});
 
 				console.log("Transaction validated and sent back to manager");
-			}
-		});
+			});
+		}
 	};
 };
 

@@ -9,8 +9,8 @@ const shardId = nodeIds["utxo shard"].id;
 const handleIncomingConnection = (connection) => {
 	const senderId = connection.peer;
 
-	PeerConnection.onConnectionReceiveData(senderId, async (data) => {
-		if (senderId === transactionCoordinatorId) {
+	if (senderId === transactionCoordinatorId) {
+		PeerConnection.onConnectionReceiveData(senderId, async (data) => {
 			switch (data.action) {
 				case "prepare":
 					{
@@ -52,8 +52,8 @@ const handleIncomingConnection = (connection) => {
 					console.log("Transaction commit complete");
 					break;
 			}
-		}
-	});
+		});
+	}
 };
 
 const UtxoShard = () => {

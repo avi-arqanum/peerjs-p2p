@@ -27,24 +27,29 @@ const User = () => {
 	const handleIncomingConnection = (incomingConnection) => {
 		const senderId = incomingConnection.peer;
 
-		PeerConnection.onConnectionReceiveData(
-			senderId,
-			async (transactionData) => {
-				if (senderId === transactionManagerId) {
-					console.log(
-						"Transaction manager has asked to update received UTXOs"
-					);
+		if (senderId === transactionManagerId) {
+			PeerConnection.onConnectionReceiveData(
+				senderId,
+				async (transactionData) => {
+					if (transactionData.type === "get payment") {
+						console.log(
+							"Transaction manager has asked to update received UTXOs"
+						);
 
-					// update merkle patricia trie
+						// update merkle patricia trie
 
-					await PeerConnection.sendConnection(transactionManagerId, {
-						type: "payment updated",
-						success: true,
-					});
-					console.log("Ledger updated & sent back to manager");
+						await PeerConnection.sendConnection(
+							transactionManagerId,
+							{
+								type: "payment updated",
+								success: true,
+							}
+						);
+						console.log("Ledger updated & sent back to manager");
+					}
 				}
-			}
-		);
+			);
+		}
 	};
 
 	return (

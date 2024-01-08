@@ -67,20 +67,22 @@ export const handleTransaction = async (transactionData) => {
 export const handleIncomingConnection = (incomingConnection) => {
 	const senderId = incomingConnection.peer;
 
-	PeerConnection.onConnectionReceiveData(
-		senderId,
-		async (transactionData) => {
-			if (senderId === transactionManagerId) {
-				console.log("Transaction manager has sent data");
+	if (senderId === transactionManagerId) {
+		PeerConnection.onConnectionReceiveData(
+			senderId,
+			async (transactionData) => {
+				if (transactionData.type === "get payment") {
+					console.log("Transaction manager has sent data");
 
-				// update merkle patricia trie
+					// update merkle patricia trie
 
-				await PeerConnection.sendConnection(transactionManagerId, {
-					type: "payment updated",
-					success: true,
-				});
-				console.log("Payment received & ledger updated");
+					await PeerConnection.sendConnection(transactionManagerId, {
+						type: "payment updated",
+						success: true,
+					});
+					console.log("Payment received & ledger updated");
+				}
 			}
-		}
-	);
+		);
+	}
 };
