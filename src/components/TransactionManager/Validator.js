@@ -20,15 +20,14 @@ export const handleValidatorsValidation = async (
 			new Promise(async (resolve) => {
 				await PeerConnection.connectPeer(validatorId);
 
-				await PeerConnection.sendConnection(
-					validatorId,
-					transactionData
-				);
+				await PeerConnection.sendConnection(validatorId, {
+					...transactionData,
+					type: "transaction validation",
+				});
 
-				PeerConnection.onConnectionReceiveData(
-					validatorId,
-					(validationData) => {
-						if (validationData.success) {
+				PeerConnection.onConnectionReceiveData(validatorId, (data) => {
+					if (data.type === "validation result") {
+						if (data.success) {
 							votes.valid += 1;
 						} else {
 							votes.invalid += 1;
@@ -36,7 +35,7 @@ export const handleValidatorsValidation = async (
 
 						resolve();
 					}
-				);
+				});
 			})
 		);
 	}
