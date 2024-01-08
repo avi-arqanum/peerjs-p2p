@@ -7,7 +7,6 @@ function generateKeyPair(seedString) {
 
 	const encoder = new TextEncoder();
 	const seed = encoder.encode(seedString);
-	console.log(seed);
 
 	const keyPair = ec.keyFromPrivate(seed);
 

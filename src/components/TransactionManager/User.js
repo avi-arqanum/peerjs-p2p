@@ -37,7 +37,6 @@ const unresolvedPromises = new Map();
 
 export const handleUserConnection = (connection) => {
 	const senderId = connection.peer;
-	console.log(`Transaction manager connected to: ${senderId}`);
 
 	PeerConnection.onConnectionReceiveData(senderId, async (data) => {
 		switch (data.type) {
@@ -52,7 +51,7 @@ export const handleUserConnection = (connection) => {
 						return;
 					}
 
-					console.log("Transaction validation has begun");
+					console.log("transaction validation has begun");
 					const transactionId = calculateTransactionId(data);
 
 					await handleValidation(senderId, transactionId, data);

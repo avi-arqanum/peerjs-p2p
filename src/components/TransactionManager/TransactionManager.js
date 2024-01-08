@@ -58,6 +58,7 @@ export const handleValidation = async (
 	await Promise.all(validationPromises);
 
 	const { totalVotes, valid } = veto.getVotes(transactionId);
+	console.log("veto votes result", totalVotes, valid);
 
 	if (totalVotes !== 2) {
 		throw new Error("Something went wrong!");

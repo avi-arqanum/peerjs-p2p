@@ -39,7 +39,7 @@ const localValidate = (transaction) => {
 const compactTransactions = new Map();
 export const compact = {
 	getTransaction: (transactionId) => {
-		compactTransactions.get(transactionId);
+		return compactTransactions.get(transactionId);
 	},
 	addTransaction: (transactionData, transactionId) => {
 		if (compactTransactions.has(transactionId)) {
@@ -86,32 +86,41 @@ export const handleCurrencyShardValidation = async (
 	transactionId
 ) => {
 	if (localValidate(transactionData)) {
+		console.log("local validation successful");
 		compact.addTransaction(transactionData, transactionId);
 
-		const compactTransaction = {
-			type: "transaction validation",
-			...compact.getTransaction(transactionId),
-		};
+		var compactTransaction = compact.getTransaction(transactionId);
+		compactTransaction.type = "transaction validation";
 
-		await PeerConnection.connectPeer(transactionCoordinatorId);
+		const shardValidationCompletePromise = new Promise(async (resolve) => {
+			await PeerConnection.connectPeer(transactionCoordinatorId);
 
-		await PeerConnection.sendConnection(
-			transactionCoordinatorId,
-			compactTransaction
-		);
+			await PeerConnection.sendConnection(
+				transactionCoordinatorId,
+				compactTransaction
+			);
 
-		PeerConnection.onConnectionReceiveData(
-			transactionCoordinatorId,
-			(data) => {
-				switch (data.type) {
-					case "validation result":
-						{
-							veto.updateVotes(transactionId, data.success);
-						}
-						break;
+			PeerConnection.onConnectionReceiveData(
+				transactionCoordinatorId,
+				(data) => {
+					switch (data.type) {
+						case "validation result":
+							{
+								veto.updateVotes(transactionId, data.success);
+								console.log(
+									"shards layer validation result",
+									data.success ? "valid" : "invalid"
+								);
+
+								resolve();
+							}
+							break;
+					}
 				}
-			}
-		);
+			);
+		});
+
+		await shardValidationCompletePromise;
 	} else {
 		veto.updateVotes(transactionId, false);
 	}
