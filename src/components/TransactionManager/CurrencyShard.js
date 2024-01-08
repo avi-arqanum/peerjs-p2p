@@ -1,5 +1,5 @@
 import { ec as EC } from "elliptic";
-import { createHash } from "crypto";
+import { SHA256 } from "crypto-js";
 
 import PeerConnection from "../../peer";
 import { veto } from "./TransactionManager";
@@ -9,7 +9,7 @@ const utxoHash = (utxo) => {
 	const utxoString =
 		utxo.transactionId + utxo.outputIndex + utxo.publicKey + utxo.amount;
 
-	return createHash("SHA256").update(utxoString).digest("hex");
+	return SHA256(utxoString).toString();
 };
 
 function verifySignature(utxo, signature) {
