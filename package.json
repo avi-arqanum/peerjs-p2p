@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "crypto-js": "^4.2.0",
     "elliptic": "^6.5.4",
+    "merkle-patricia-tree": "^4.2.4",
     "peerjs": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

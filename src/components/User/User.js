@@ -45,6 +45,7 @@ const handleTransactionResult = (transactionResult) => {
 };
 
 export const handleTransaction = async (transactionData) => {
+	console.log(transactionData);
 	try {
 		await PeerConnection.connectPeer(transactionManagerId);
 		console.log("Connection with transaction manager established");

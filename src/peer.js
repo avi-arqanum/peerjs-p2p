@@ -16,6 +16,8 @@ const IdMapping = {
 		"utxo shard",
 	"04f16f804244e46e2a09232d4aff3b59976b98fac14328a2d1a32496b49998f247cedabd9b82203f7e13d206fcdf4e33d92a6c53c26e5cce26d6579962c4e31df6":
 		"sender",
+	"044fdcb8fa639cee441c8331fd47a2e5ff3447be24500ca7a5249971067c1d506b25a5208b674bfd4cae4d91eb555010aa422cc82409d5079690f3743d00fdaefb":
+		"global",
 };
 
 const PeerConnection = {

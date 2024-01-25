@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 
 import PeerConnection from "../../../peer";
+import MPT from "./merklePatriciaTrie";
 import nodeIds from "../../../Ids";
 
 const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 const shardId = nodeIds["utxo shard"].id;
+
+const Mpt = MPT();
 
 const handleIncomingConnection = (connection) => {
 	const senderId = connection.peer;
@@ -15,7 +18,8 @@ const handleIncomingConnection = (connection) => {
 				case "prepare":
 					{
 						// check UHS whether inputHashes exist & whether they are unlocked
-						const isValid = true;
+						const isValid = Mpt.validateTransaction(data);
+
 						await PeerConnection.sendConnection(senderId, {
 							type: "validation result",
 							action: isValid ? "ready" : "reject",
@@ -32,6 +36,8 @@ const handleIncomingConnection = (connection) => {
 
 				case "rollback":
 					// unlock the inputHashes if locked
+					Mpt.rollbackTransaction(data);
+
 					await PeerConnection.sendConnection(senderId, {
 						type: "rollback response",
 						action: "complete",
@@ -44,6 +50,8 @@ const handleIncomingConnection = (connection) => {
 
 				case "commit":
 					// update UHS by deleting inputHashes & adding outputHashes
+					Mpt.swapAbstraction(data);
+
 					PeerConnection.sendConnection(senderId, {
 						type: "commit response",
 						action: "complete",

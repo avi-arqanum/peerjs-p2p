@@ -10,6 +10,11 @@ import {
 	handleCurrencyShardsLedgerUpdate,
 } from "./CurrencyShard";
 
+import {
+	handleGlobalLedgerValidation,
+	handleGlobalLedgerUpdate,
+} from "./GlobalLedger";
+
 import { compact } from "./CurrencyShard";
 import PeerConnection from "../../peer";
 import nodeIds from "../../Ids";
@@ -55,16 +60,20 @@ export const handleValidation = async (
 		handleCurrencyShardValidation(transactionData, transactionId)
 	);
 
+	validationPromises.push(
+		handleGlobalLedgerValidation(transactionData, transactionId)
+	);
+
 	await Promise.all(validationPromises);
 
 	const { totalVotes, valid } = veto.getVotes(transactionId);
 	console.log("veto votes result", totalVotes, valid);
 
-	if (totalVotes !== 2) {
-		throw new Error("Something went wrong!");
+	if (totalVotes !== 3) {
+		throw new Error("Something serious went wrong!");
 	}
 
-	const isValid = valid === 2;
+	const isValid = valid >= 2;
 
 	if (isValid) {
 		await handleValidTransaction(senderId, transactionId, transactionData);
@@ -89,6 +98,10 @@ export const handleValidTransaction = async (
 	);
 
 	layerUpdatePromises.push(handleCurrencyShardsLedgerUpdate(transactionId));
+
+	layerUpdatePromises.push(
+		handleGlobalLedgerUpdate(transactionData, transactionId)
+	);
 
 	await Promise.all(layerUpdatePromises);
 	console.log("All layers have updated their ledger!");
