@@ -1,4 +1,6 @@
 import nodeIds from "../../Ids";
+import PeerConnection from "../../peer";
+import { veto } from "./TransactionManager";
 
 const globalLedgerId = nodeIds.global.id;
 
