@@ -14,7 +14,7 @@ const recipientPublicKey = nodeIds["recipient"].id;
 
 var transactionData = {
 	type: "payment",
-	inputUTXOs: [
+	inputUtxos: [
 		{
 			transactionId: "transactionId1",
 			outputIndex: 0,
@@ -22,7 +22,7 @@ var transactionData = {
 			publicKey: userPublicKey,
 		},
 	],
-	outputUTXOs: [
+	outputUtxos: [
 		{
 			amount: 10,
 			publicKey: recipientPublicKey,
@@ -34,7 +34,7 @@ var transactionData = {
 	],
 };
 
-transactionData.digitalSignatures = transactionData.inputUTXOs.map((utxo) =>
+transactionData.digitalSignatures = transactionData.inputUtxos.map((utxo) =>
 	createSignature(utxo, "5")
 );
 

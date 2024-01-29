@@ -14,10 +14,10 @@ export default function calculateTransactionId(transactionData) {
 			input.publicKey;
 	}
 
-	transactionString += transactionData.outputUTXOs.length;
+	transactionString += transactionData.outputUtxos.length;
 
 	// Concatenate output UTXOs
-	for (const output of transactionData.outputUTXOs) {
+	for (const output of transactionData.outputUtxos) {
 		transactionString += output.amount + output.publicKey;
 	}
 

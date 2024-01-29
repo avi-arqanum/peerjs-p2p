@@ -5,7 +5,7 @@ import calculateTransactionId from "./transactionId";
 const validFormat = (transaction) => {
 	if (
 		transaction.inputUTXOs.length < 1 ||
-		transaction.outputUTXOs.length < 1
+		transaction.outputUtxos.length < 1
 	) {
 		return false;
 	}
@@ -22,7 +22,7 @@ const validFormat = (transaction) => {
 	}
 
 	let totalOutputValue = 0;
-	for (let output of transaction.outputUTXOs) {
+	for (let output of transaction.outputUtxos) {
 		totalOutputValue += output.amount;
 	}
 
@@ -84,14 +84,14 @@ export const handleUsersLedgerUpdate = async (
 	transactionData,
 	transactionId
 ) => {
-	const outputUTXOs = transactionData.outputUTXOs.map((output, index) => ({
+	const outputUtxos = transactionData.outputUtxos.map((output, index) => ({
 		...output,
 		transactionId: transactionId,
 		outputIndex: index,
 	}));
 
-	const changeUTXOs = outputUTXOs.filter(
-		(outputUTXO) => outputUTXO.publicKey === senderId
+	const changeUTXOs = outputUtxos.filter(
+		(outputUtxo) => outputUtxo.publicKey === senderId
 	);
 
 	const transactionResult = {
@@ -111,8 +111,8 @@ export const handleUsersLedgerUpdate = async (
 		})
 	);
 
-	for (let outputUTXO of outputUTXOs) {
-		const recepientId = outputUTXO.publicKey;
+	for (let outputUtxo of outputUtxos) {
+		const recepientId = outputUtxo.publicKey;
 
 		if (recepientId !== senderId) {
 			await PeerConnection.connectPeer(recepientId);
@@ -121,7 +121,7 @@ export const handleUsersLedgerUpdate = async (
 				new Promise(async (resolve) => {
 					await PeerConnection.sendConnection(recepientId, {
 						type: "get payment",
-						receivedUTXOs: [outputUTXO],
+						receivedUTXOs: [outputUtxo],
 					});
 
 					PeerConnection.onConnectionReceiveData(

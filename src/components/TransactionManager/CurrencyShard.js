@@ -57,15 +57,15 @@ export const compact = {
 		const outputHashes = [];
 		for (
 			let index = 0;
-			index < transactionData.outputUTXOs.length;
+			index < transactionData.outputUtxos.length;
 			index += 1
 		) {
-			const outputUTXO = {
-				...transactionData.outputUTXOs[index],
+			const outputUtxo = {
+				...transactionData.outputUtxos[index],
 				transactionId,
 				outputIndex: index,
 			};
-			outputHashes.push(utxoHash(outputUTXO));
+			outputHashes.push(utxoHash(outputUtxo));
 		}
 
 		compactTransactions.set(transactionId, {

@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import GlobalLedger from "./components/GlobalLedger";
+import User from "./components/User";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<GlobalLedger />);
+root.render(<User />);
