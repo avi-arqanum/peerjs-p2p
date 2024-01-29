@@ -4,20 +4,20 @@ import calculateTransactionId from "./transactionId";
 
 const validFormat = (transaction) => {
 	if (
-		transaction.inputUTXOs.length < 1 ||
+		transaction.inputUtxos.length < 1 ||
 		transaction.outputUtxos.length < 1
 	) {
 		return false;
 	}
 
 	if (
-		transaction.digitalSignatures.length !== transaction.inputUTXOs.length
+		transaction.digitalSignatures.length !== transaction.inputUtxos.length
 	) {
 		return false;
 	}
 
 	let totalInputValue = 0;
-	for (let input of transaction.inputUTXOs) {
+	for (let input of transaction.inputUtxos) {
 		totalInputValue += input.amount;
 	}
 
@@ -97,7 +97,7 @@ export const handleUsersLedgerUpdate = async (
 	const transactionResult = {
 		type: "payment result",
 		success: true,
-		inputUTXOs: transactionData.inputUTXOs,
+		inputUtxos: transactionData.inputUtxos,
 		changeUTXOs,
 	};
 

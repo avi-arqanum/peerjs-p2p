@@ -24,8 +24,8 @@ function verifySignature(utxo, signature) {
 }
 
 const localValidate = (transaction) => {
-	for (let i = 0; i < transaction.inputUTXOs.length; i++) {
-		const utxo = transaction.inputUTXOs[i];
+	for (let i = 0; i < transaction.inputUtxos.length; i++) {
+		const utxo = transaction.inputUtxos[i];
 		const signature = transaction.digitalSignatures[i];
 
 		if (!verifySignature(utxo, signature)) {
@@ -50,8 +50,8 @@ export const compact = {
 		}
 
 		const inputHashes = [];
-		for (let inputUTXO of transactionData.inputUTXOs) {
-			inputHashes.push(utxoHash(inputUTXO));
+		for (let inputUtxo of transactionData.inputUtxos) {
+			inputHashes.push(utxoHash(inputUtxo));
 		}
 
 		const outputHashes = [];

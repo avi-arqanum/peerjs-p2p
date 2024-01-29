@@ -3,10 +3,10 @@ const CryptoJS = require("crypto-js");
 export default function calculateTransactionId(transactionData) {
 	let transactionString = "";
 
-	transactionString += transactionData.inputUTXOs.length;
+	transactionString += transactionData.inputUtxos.length;
 
 	// Concatenate input UTXOs
-	for (const input of transactionData.inputUTXOs) {
+	for (const input of transactionData.inputUtxos) {
 		transactionString +=
 			input.transactionId +
 			input.outputIndex +
