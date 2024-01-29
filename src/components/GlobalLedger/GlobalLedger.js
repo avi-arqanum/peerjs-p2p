@@ -14,7 +14,7 @@ export const handleIncomingConnection = (connection) => {
 			senderId,
 			async (transactionData) => {
 				switch (transactionData.type) {
-					case "validate transaction":
+					case "transaction validation":
 						{
 							const isValid =
 								dag.validateTransaction(transactionData);

@@ -12,8 +12,8 @@ export const handleGlobalLedgerValidation = async (
 		await PeerConnection.connectPeer(globalLedgerId);
 
 		await PeerConnection.sendConnection(globalLedgerId, {
-			type: "transaction validation",
 			...transactionData,
+			type: "transaction validation",
 			transactionId,
 		});
 
