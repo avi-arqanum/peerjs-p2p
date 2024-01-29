@@ -12,27 +12,33 @@ export default class MPT {
 		return MPT.instance;
 	}
 
-	getUtxoValue(key) {
-		return this.Trie.get(Buffer.from(key));
+	async getUtxoValue(key) {
+		const value = await this.Trie.get(Buffer.from(key));
+		return value;
 	}
 
-	addUtxo(key) {
-		this.Trie.put(Buffer.from(key), Buffer.from("false"));
+	async addUtxo(key) {
+		await this.Trie.put(Buffer.from(key), Buffer.from("false"));
 	}
 
-	updateUtxo(key, lock) {
-		this.Trie.put(Buffer.from(key), Buffer.from(lock ? "true" : "false"));
+	async updateUtxo(key, lock) {
+		await this.Trie.put(
+			Buffer.from(key),
+			Buffer.from(lock ? "true" : "false")
+		);
 	}
 
-	deleteUtxo(key) {
-		this.Trie.del(Buffer.from(key));
+	async deleteUtxo(key) {
+		await this.Trie.del(Buffer.from(key));
 	}
 
-	validateTransaction(compactData) {
+	async validateTransaction(compactData) {
 		const { inputHashes } = compactData;
+		console.log("inputHashes", inputHashes);
 
-		for (let inputHash of inputHashes) {
-			const value = this.getUtxoValue(inputHash);
+		for (const inputHash of inputHashes) {
+			const value = await this.getUtxoValue(inputHash);
+			console.log("value", value);
 
 			if (!value) {
 				return false;
@@ -42,29 +48,30 @@ export default class MPT {
 				return false;
 			}
 
-			this.updateUtxo(inputHash, true);
+			await this.updateUtxo(inputHash, true);
 		}
 
 		return true;
 	}
 
-	rollbackTransaction(compactData) {
+	async rollbackTransaction(compactData) {
 		const { inputHashes } = compactData;
 
 		for (let inputHash of inputHashes) {
-			this.updateUtxo(inputHash, false);
+			await this.updateUtxo(inputHash, false);
 		}
 	}
 
-	swapAbstraction(compactData) {
+	async swapAbstraction(compactData) {
+		console.log(compactData);
 		const { inputHashes, outputHashes } = compactData;
 
 		for (let inputHash of inputHashes) {
-			this.deleteUtxo(inputHash);
+			await this.deleteUtxo(inputHash);
 		}
 
 		for (let outputHash of outputHashes) {
-			this.addUtxo(outputHash);
+			await this.addUtxo(outputHash);
 		}
 	}
 }

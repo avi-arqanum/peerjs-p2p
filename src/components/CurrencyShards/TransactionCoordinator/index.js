@@ -94,6 +94,117 @@ const handleShardValidation = async (compactData) => {
 	return rejected.length === 0;
 };
 
+const handleTransactionValidation = async (compactData) => {
+	console.log("transaction validation begun");
+	const isValid = await handleShardValidation(compactData);
+
+	await PeerConnection.sendConnection(senderId, {
+		success: isValid,
+		type: "validation result",
+		transactionId: compactData.transactionId,
+	});
+	console.log("transaction validation done with consensus", isValid);
+
+	// how would we handle the case when shards have discarded the transaction
+	// but transaction manager has come to a valid consensus (ANOMALY)
+	// very unlikely though
+};
+
+const handleTransactionValidated = async (compactData) => {
+	console.log("transaction has been validated & ledger updation has begun");
+
+	const { inputShardHashes, outputShardHashes } = hashes.getShardHashes(
+		compactData.transactionId
+	);
+
+	const shardCommitPromises = [];
+
+	for (let i = 0; i < utxoShardIds.length; i += 1) {
+		if (
+			inputShardHashes[i].length === 0 &&
+			outputShardHashes[i].length === 0
+		) {
+			continue;
+		}
+
+		const shardId = utxoShardIds[i];
+
+		shardCommitPromises.push(
+			new Promise(async (resolve) => {
+				await PeerConnection.sendConnection(shardId, {
+					action: "commit",
+					transactionId: compactData.transactionId,
+					inputHashes: inputShardHashes[i],
+					outputHashes: outputShardHashes[i],
+				});
+
+				PeerConnection.onConnectionReceiveData(
+					shardId,
+					(shardResponse) => {
+						if (
+							shardResponse.type === "commit response" &&
+							shardResponse.action === "complete"
+						) {
+							resolve();
+						}
+					}
+				);
+			})
+		);
+	}
+
+	await Promise.all(shardCommitPromises);
+	console.log("ledger updation done");
+
+	await PeerConnection.sendConnection(senderId, {
+		type: "ledger updated",
+		success: true,
+	});
+};
+
+const handleTransactionInvalidated = async (compactData) => {
+	console.log("transaction rollback has begun");
+
+	const inputShardHashes = hashes.getShardHashes(
+		compactData.transactionId
+	).inputShardHashes;
+
+	const shardRollbackPromises = [];
+
+	for (let i = 0; i < utxoShardIds.length; i += 1) {
+		if (inputShardHashes[i].length === 0) {
+			continue;
+		}
+
+		const shardId = utxoShardIds[i];
+
+		shardRollbackPromises.push(
+			new Promise(async (resolve) => {
+				await PeerConnection.sendConnection(shardId, {
+					action: "rollback",
+					transactionId: compactData.transactionId,
+					inputHashes: inputShardHashes[i],
+				});
+
+				PeerConnection.onConnectionReceiveData(
+					shardId,
+					(shardResponse) => {
+						if (
+							shardResponse.type === "rollback response" &&
+							shardResponse.action === "complete"
+						) {
+							resolve();
+						}
+					}
+				);
+			})
+		);
+	}
+
+	await Promise.all(shardRollbackPromises);
+	console.log("All the validators have rollback & unlocked the UTXOs");
+};
+
 const handleIncomingConnection = async (connection) => {
 	const senderId = connection.peer;
 
@@ -103,142 +214,15 @@ const handleIncomingConnection = async (connection) => {
 			async (compactData) => {
 				switch (compactData.type) {
 					case "transaction validation":
-						{
-							console.log("transaction validation begun");
-							const isValid = await handleShardValidation(
-								compactData
-							);
-
-							await PeerConnection.sendConnection(senderId, {
-								success: isValid,
-								type: "validation result",
-								transactionId: compactData.transactionId,
-							});
-							console.log(
-								"transaction validation done with consensus",
-								isValid
-							);
-
-							// how would we handle the case when shards have discarded the transaction
-							// but transaction manager has come to a valid consensus (ANOMALY)
-							// very unlikely though
-						}
-						break;
-
-					case "transaction invalidated":
-						{
-							console.log("transaction rollback has begun");
-
-							const inputShardHashes = hashes.getShardHashes(
-								compactData.transactionId
-							).inputShardHashes;
-
-							const shardRollbackPromises = [];
-
-							for (let i = 0; i < utxoShardIds.length; i += 1) {
-								if (inputShardHashes[i].length === 0) {
-									continue;
-								}
-
-								const shardId = utxoShardIds[i];
-
-								shardRollbackPromises.push(
-									new Promise(async (resolve) => {
-										await PeerConnection.sendConnection(
-											shardId,
-											{
-												action: "rollback",
-												transactionId:
-													compactData.transactionId,
-												inputShardHashes,
-											}
-										);
-
-										PeerConnection.onConnectionReceiveData(
-											shardId,
-											(shardResponse) => {
-												if (
-													shardResponse.type ===
-														"rollback response" &&
-													shardResponse.action ===
-														"complete"
-												) {
-													resolve();
-												}
-											}
-										);
-									})
-								);
-							}
-
-							await Promise.all(shardRollbackPromises);
-							console.log(
-								"All the validators have rollback & unlocked the UTXOs"
-							);
-						}
+						handleTransactionValidation(compactData);
 						break;
 
 					case "transaction validated":
-						{
-							console.log(
-								"transaction has been validated & ledger updation has begun"
-							);
+						handleTransactionValidated(compactData);
+						break;
 
-							const shardHashes = hashes.getShardHashes(
-								compactData.transactionId
-							);
-
-							const shardCommitPromises = [];
-
-							for (let i = 0; i < utxoShardIds.length; i += 1) {
-								if (
-									shardHashes.inputShardHashes[i].length ===
-										0 &&
-									shardHashes.outputShardHashes[i].length ===
-										0
-								) {
-									continue;
-								}
-
-								const shardId = utxoShardIds[i];
-
-								shardCommitPromises.push(
-									new Promise(async (resolve) => {
-										await PeerConnection.sendConnection(
-											shardId,
-											{
-												action: "commit",
-												transactionId:
-													compactData.transactionId,
-												...shardHashes,
-											}
-										);
-
-										PeerConnection.onConnectionReceiveData(
-											shardId,
-											(shardResponse) => {
-												if (
-													shardResponse.type ===
-														"commit response" &&
-													shardResponse.action ===
-														"complete"
-												) {
-													resolve();
-												}
-											}
-										);
-									})
-								);
-							}
-
-							await Promise.all(shardCommitPromises);
-							console.log("ledger updation done");
-
-							await PeerConnection.sendConnection(senderId, {
-								type: "ledger updated",
-								success: true,
-							});
-						}
+					case "transaction invalidated":
+						handleTransactionInvalidated(compactData);
 						break;
 				}
 			}
