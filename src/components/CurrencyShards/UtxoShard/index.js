@@ -7,7 +7,7 @@ import nodeIds from "../../../Ids";
 const transactionCoordinatorId = nodeIds["transaction coordinator"].id;
 const shardId = nodeIds["utxo shard"].id;
 
-const Mpt = MPT();
+const Mpt = new MPT();
 
 const handleIncomingConnection = (connection) => {
 	const senderId = connection.peer;

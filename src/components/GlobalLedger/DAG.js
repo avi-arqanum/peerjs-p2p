@@ -24,7 +24,7 @@ class TransactionNode {
 			return CryptoJS.SHA256(hash1 + hash2).toString(CryptoJS.enc.Hex);
 		}
 
-		if (!hashes || hashes.length == 0) {
+		if (!hashes || hashes.length === 0) {
 			return "";
 		}
 
@@ -133,7 +133,7 @@ export default class DAG {
 			DAG.instance = this;
 		}
 
-		return DAG.instance();
+		return DAG.instance;
 	}
 
 	validateTransaction(transactionData) {

@@ -9,7 +9,7 @@ export default class MPT {
 			MPT.instance = this;
 		}
 
-		return MPT.instance();
+		return MPT.instance;
 	}
 
 	getUtxoValue(key) {
@@ -42,7 +42,7 @@ export default class MPT {
 				return false;
 			}
 
-			this.updateUtxo(key, true);
+			this.updateUtxo(inputHash, true);
 		}
 
 		return true;
