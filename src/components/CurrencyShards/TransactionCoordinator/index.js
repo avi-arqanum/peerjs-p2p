@@ -94,7 +94,7 @@ const handleShardValidation = async (compactData) => {
 	return rejected.length === 0;
 };
 
-const handleTransactionValidation = async (compactData) => {
+const handleTransactionValidation = async (compactData, senderId) => {
 	console.log("transaction validation begun");
 	const isValid = await handleShardValidation(compactData);
 
@@ -110,7 +110,7 @@ const handleTransactionValidation = async (compactData) => {
 	// very unlikely though
 };
 
-const handleTransactionValidated = async (compactData) => {
+const handleTransactionValidated = async (compactData, senderId) => {
 	console.log("transaction has been validated & ledger updation has begun");
 
 	const { inputShardHashes, outputShardHashes } = hashes.getShardHashes(
@@ -214,11 +214,11 @@ const handleIncomingConnection = async (connection) => {
 			async (compactData) => {
 				switch (compactData.type) {
 					case "transaction validation":
-						handleTransactionValidation(compactData);
+						handleTransactionValidation(compactData, senderId);
 						break;
 
 					case "transaction validated":
-						handleTransactionValidated(compactData);
+						handleTransactionValidated(compactData, senderId);
 						break;
 
 					case "transaction invalidated":
