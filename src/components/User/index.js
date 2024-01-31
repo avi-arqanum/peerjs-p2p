@@ -18,7 +18,13 @@ var transactionData = {
 		{
 			transactionId: "transactionId1",
 			outputIndex: 0,
-			amount: 15,
+			amount: 7.5,
+			publicKey: userPublicKey,
+		},
+		{
+			transactionId: "transactionId1",
+			outputIndex: 1,
+			amount: 7.5,
 			publicKey: userPublicKey,
 		},
 	],

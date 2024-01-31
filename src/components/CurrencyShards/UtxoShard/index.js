@@ -18,25 +18,25 @@ const handleIncomingConnection = (connection) => {
 				case "prepare":
 					{
 						// check UHS whether inputHashes exist & whether they are unlocked
-						const isValid = Mpt.validateTransaction(data);
-
-						await PeerConnection.sendConnection(senderId, {
-							type: "validation result",
-							action: isValid ? "ready" : "reject",
-							transactionId: data.transactionId,
-						});
+						const isValid = await Mpt.validateTransaction(data);
 
 						console.log(
 							"UTXO shard has",
 							isValid ? "accepted" : "rejected",
 							"the transaction"
 						);
+
+						await PeerConnection.sendConnection(senderId, {
+							type: "validation result",
+							action: isValid ? "ready" : "reject",
+							transactionId: data.transactionId,
+						});
 					}
 					break;
 
 				case "rollback":
 					// unlock the inputHashes if locked
-					Mpt.rollbackTransaction(data);
+					await Mpt.rollbackTransaction(data);
 
 					await PeerConnection.sendConnection(senderId, {
 						type: "rollback response",
@@ -50,7 +50,7 @@ const handleIncomingConnection = (connection) => {
 
 				case "commit":
 					// update UHS by deleting inputHashes & adding outputHashes
-					Mpt.swapAbstraction(data);
+					await Mpt.swapAbstraction(data);
 
 					PeerConnection.sendConnection(senderId, {
 						type: "commit response",

@@ -1,4 +1,5 @@
 import { BaseTrie } from "merkle-patricia-tree";
+import { Buffer } from "buffer";
 
 export default class MPT {
 	static instance = null;
@@ -41,13 +42,16 @@ export default class MPT {
 			console.log("value", value);
 
 			if (!value) {
+				console.log("value doesn't exist", value);
 				return false;
 			}
 
 			if (value.toString() === "true") {
+				console.log("utxo locked", value);
 				return false;
 			}
 
+			console.log("utxo value exists & not locked");
 			await this.updateUtxo(inputHash, true);
 		}
 
