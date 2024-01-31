@@ -117,7 +117,7 @@ const handleInvalidTransaction = async (senderId, transactionId) => {
 	});
 
 	await PeerConnection.sendConnection(transactionCoordinatorId, {
-		type: "transaction invalidated",
 		...compact.getTransaction(transactionId),
+		type: "transaction invalidated",
 	});
 };
