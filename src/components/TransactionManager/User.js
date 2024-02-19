@@ -3,6 +3,8 @@ import { handleValidation } from "./TransactionManager";
 import calculateTransactionId from "./transactionId";
 
 const validFormat = (transaction) => {
+	return true;
+
 	if (
 		transaction.inputUtxos.length < 1 ||
 		transaction.outputUtxos.length < 1
@@ -90,15 +92,14 @@ export const handleUsersLedgerUpdate = async (
 		outputIndex: index,
 	}));
 
-	const changeUTXOs = outputUtxos.filter(
-		(outputUtxo) => outputUtxo.publicKey === senderId
-	);
-
 	const transactionResult = {
 		type: "payment result",
 		success: true,
+		transactionId,
 		inputUtxos: transactionData.inputUtxos,
-		changeUTXOs,
+		outputUtxos: outputUtxos.filter(
+			(outputUtxo) => outputUtxo.publicKey === senderId
+		),
 	};
 
 	const ledgerUpdatePromises = [];

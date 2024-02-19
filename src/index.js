@@ -1,10 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Buffer } from "buffer";
-
-import User from "./components/User";
-
-window.Buffer = Buffer;
+import TransactionManager from "./components/TransactionManager";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<User />);
+root.render(<TransactionManager />);

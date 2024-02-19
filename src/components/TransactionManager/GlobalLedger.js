@@ -43,9 +43,9 @@ export const handleGlobalLedgerUpdate = async (
 ) => {
 	const globalLedgerUpdatePromise = new Promise(async (resolve) => {
 		await PeerConnection.sendConnection(globalLedgerId, {
-			type: "transaction validated",
 			...transactionData,
 			transactionId,
+			type: "transaction validated",
 		});
 
 		PeerConnection.onConnectionReceiveData(globalLedgerId, (data) => {
